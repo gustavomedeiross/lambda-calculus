@@ -1,0 +1,6 @@
+(executable
+ (name lambda))
+
+(ocamllex lexer)
+
+(menhir (modules parser))
