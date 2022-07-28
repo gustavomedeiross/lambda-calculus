@@ -34,6 +34,9 @@ rule read =
   | "false" { FALSE }
   | "(" { LPARENS }
   | ")" { RPARENS }
+  | "let" { LET }
+  | "=" { EQUALS }
+  | "in" { IN }
   | "->" { ARROW }
   | "fun" { FUN }
   | id { IDENT (Lexing.lexeme lexbuf) }

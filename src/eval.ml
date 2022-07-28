@@ -15,6 +15,10 @@ let rec eval (env : env) (expr : expr) : value =
   | Integer v -> VInt v
   | Boolean b -> VBool b
   | BinOp (bop, e1, e2) -> eval_bop env bop e1 e2
+  | Let (name, e1, e2) ->
+    let value = eval env e1 in
+    let new_env = (name, value) :: env in
+    eval new_env e2
 
 and eval_app env abstraction argument =
   let arg = eval env argument in

@@ -6,6 +6,7 @@ type expr =
   | Integer of int
   | Boolean of bool
   | BinOp of (binop * expr * expr)
+  | Let of (var * expr * expr)
 
 and binop =
   | Plus

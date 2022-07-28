@@ -16,6 +16,9 @@ let rec make_application e = function
 %token ARROW
 %token LPARENS
 %token RPARENS
+%token LET
+%token EQUALS
+%token IN
 %token PLUS
 %token EOF
 
@@ -31,6 +34,7 @@ let expr :=
   | abstraction
   | application
   | binop
+  | let_expr
 
 let sub_expr ==
   | terminal
@@ -45,8 +49,11 @@ let boolean ==
   | TRUE; { Boolean true }
   | FALSE; { Boolean false }
 
+let let_expr ==
+  | LET; name = IDENT; EQUALS; e1 = expr; IN; e2 = expr; { Let (name, e1, e2) }
+
 let abstraction ==
-  | FUN; x = IDENT; ARROW; e = expr; { Abstraction { param = x; body = e } }
+  | FUN; param = IDENT; ARROW; e = expr; { Abstraction { param = param; body = e } }
 
 let application :=
   | e = sub_expr; es = sub_expr+; { make_application e es }
