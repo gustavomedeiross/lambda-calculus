@@ -30,6 +30,8 @@ rule read =
   | white { read lexbuf }
   | newline { next_line lexbuf; read lexbuf }
   | int { INT (int_of_string (Lexing.lexeme lexbuf)) }
+  | "true" { TRUE }
+  | "false" { FALSE }
   | "(" { LPARENS }
   | ")" { RPARENS }
   | "->" { ARROW }

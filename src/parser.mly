@@ -10,6 +10,8 @@ let rec make_application e = function
 
 %token <int> INT
 %token <string> IDENT
+%token TRUE
+%token FALSE
 %token FUN
 %token ARROW
 %token LPARENS
@@ -37,6 +39,11 @@ let sub_expr ==
 let terminal ==
   | var = IDENT; { Variable { name = var } }
   | i = INT; { Integer i }
+  | boolean
+
+let boolean ==
+  | TRUE; { Boolean true }
+  | FALSE; { Boolean false }
 
 let abstraction ==
   | FUN; x = IDENT; ARROW; e = expr; { Abstraction { param = x; body = e } }

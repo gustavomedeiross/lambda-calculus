@@ -3,6 +3,7 @@ open Ast
 type value =
   | VClosure of { param : var; body : expr; env : env  }
   | VInt of int
+  | VBool of bool
 
 and env = (var * value) list
 
@@ -12,6 +13,7 @@ let rec eval (env : env) (expr : expr) : value =
   | Abstraction { param; body } -> VClosure { param; body; env }
   | Application { abstraction; argument } -> eval_app env abstraction argument
   | Integer v -> VInt v
+  | Boolean b -> VBool b
   | BinOp (bop, e1, e2) -> eval_bop env bop e1 e2
 
 and eval_app env abstraction argument =
@@ -36,3 +38,4 @@ and get_integer = function
 let value_to_string = function
   | VClosure _ -> "VClosure - to_string not implemented"
   | VInt v -> string_of_int v
+  | VBool b -> string_of_bool b
