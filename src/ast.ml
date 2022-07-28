@@ -8,9 +8,3 @@ type expr =
 
 and binop =
   | Plus
-
-type value =
-  | VClosure of { param : var; body : expr; env : env  }
-  | VInt of int
-
-and env = (var * value) list

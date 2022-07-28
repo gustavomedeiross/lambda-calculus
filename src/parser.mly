@@ -1,6 +1,7 @@
 %{
 open Ast
 
+(* f a b c -> (((f a) b) c) *)
 let rec make_application e = function
   | [] -> failwith "precondition violated"
   | [e'] -> Application { abstraction = e; argument = e' }
@@ -40,7 +41,7 @@ let terminal ==
 let abstraction ==
   | FUN; x = IDENT; ARROW; e = expr; { Abstraction { param = x; body = e } }
 
-let application ==
+let application :=
   | e = sub_expr; es = sub_expr+; { make_application e es }
 
 let binop ==

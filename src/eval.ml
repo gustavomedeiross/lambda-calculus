@@ -1,5 +1,11 @@
 open Ast
 
+type value =
+  | VClosure of { param : var; body : expr; env : env  }
+  | VInt of int
+
+and env = (var * value) list
+
 let rec eval (env : env) (expr : expr) : value =
   match expr with
   | Variable { name } -> List.assoc name env
@@ -26,3 +32,7 @@ and eval_bop (env : env) (bop : binop) (e1 : expr) (e2 : expr) : value =
 and get_integer = function
   | VInt v -> v
   | _ -> failwith "Expected integer at binary operation"
+
+let value_to_string = function
+  | VClosure _ -> "VClosure - to_string not implemented"
+  | VInt v -> string_of_int v
