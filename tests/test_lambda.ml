@@ -24,6 +24,11 @@ let let_shadows () =
     ~expr:"let x = 1 in let x = x + 2 in x"
     ~output:"3"
 
+let let_with_func () =
+  test_eval "let shadows"
+    ~expr:"let f = fun x -> x + 1 in f 10"
+    ~output:"11"
+
 let () =
   let open Alcotest in
   run "Lambda tests" [
@@ -32,5 +37,6 @@ let () =
       ; test_case "id func with boolean " `Quick id_func_with_boolean
       ; test_case "let expr" `Quick let_expr
       ; test_case "let shadows" `Quick let_shadows
+      ; test_case "let with func" `Quick let_with_func
     ]
   ]
