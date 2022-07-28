@@ -1,0 +1,4 @@
+(test
+ (name test_lambda)
+ (libraries lambda alcotest)
+ (preprocess (pps ppx_deriving.show ppx_deriving.eq)))
