@@ -9,6 +9,8 @@ type type_err = TypeError of string
 (* TODO: could return a Typedtree after *)
 type result = (Types.typ, type_err) Result.t
 
+let (let*) x f = Result.bind x f
+
 let rec typecheck (env : typeenv) (expr : Ast.expr) : result =
   let open Ast in
   match expr with
@@ -18,8 +20,8 @@ let rec typecheck (env : typeenv) (expr : Ast.expr) : result =
   | _ -> failwith "Not implemented"
 
 and typecheck_binop env op e1 e2 =
-  let t1 = unsafe_typecheck env e1 in
-  let t2 = unsafe_typecheck env e2 in
+  let* t1 = typecheck env e1 in
+  let* t2 = typecheck env e2 in
   match op with
   | Plus -> typecheck_int_binop t1 t2
 
@@ -32,10 +34,4 @@ and typecheck_int_binop t1 t2 =
 and binop_error t =
   let t = Types.type_to_string t in
   Result.error (TypeError ("Expected int, found " ^ t))
-
-(* TODO: remove this function and use a monad *)
-and unsafe_typecheck env expr =
-  match typecheck env expr with
-  | Ok t -> t
-  | Error (TypeError e) -> failwith e
  
