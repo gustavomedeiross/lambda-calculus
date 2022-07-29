@@ -1,4 +1,5 @@
 type var = string
+type binop = Plus
 type expr =
   | Variable of { name : var }
   | Abstraction of { param : var; body : expr; }
@@ -7,6 +8,3 @@ type expr =
   | Boolean of bool
   | BinOp of (binop * expr * expr)
   | Let of (var * expr * expr)
-
-and binop =
-  | Plus

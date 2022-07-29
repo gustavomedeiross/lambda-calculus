@@ -1,4 +1,6 @@
 module Eval = Eval
+module Typecheck = Typecheck
+module Types = Types
 
 let parse (s : string) : Ast.expr =
   let lexbuf = Lexing.from_string s in
