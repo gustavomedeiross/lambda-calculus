@@ -121,14 +121,6 @@ module TypecheckTest = struct
     typechecks_to "complete application of nested abstractions"
       ~expr:"let f = fun x : int -> (fun y : int -> x + y) in f 5 10"
       ~typ:(Types.TInt);
-
-    (* typechecks_to "Basic let"
-     *   ~expr:"let x : int = 1 in x"
-     *   ~typ:"int"; *)
-
-    (* typecheck_fails_with "Invalid let"
-     *   ~expr:"let x : int = true in x"
-     *   ~error:"Found bool, expected int"; *)
   ]
 end
 
