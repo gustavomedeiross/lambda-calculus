@@ -10,11 +10,11 @@ module EvalTest = struct
 
   let tests = [
     test_eval "simple binop"
-      ~expr:"((fun x -> fun y -> x + y) 2) 4"
+      ~expr:"((fun x : int -> fun y : int -> x + y) 2) 4"
       ~output:"6";
 
     test_eval "id func with bool "
-      ~expr:"(fun x -> x) true"
+      ~expr:"(fun x : int -> x) true"
       ~output:"true";
 
     test_eval "let expr"
@@ -26,7 +26,7 @@ module EvalTest = struct
       ~output:"3";
 
     test_eval "let with func"
-      ~expr:"let f = fun x -> x + 1 in f 10"
+      ~expr:"let f = fun x : int -> x + 1 in f 10"
       ~output:"11";
   ]
 end
@@ -134,6 +134,6 @@ end
 
 let () =
   Alcotest.run "Lambda tests" [
-    (* "Lambda Eval", EvalTest.tests; *)
+    "Lambda Eval", EvalTest.tests;
     "Lambda Typechecking", TypecheckTest.tests;
   ]
