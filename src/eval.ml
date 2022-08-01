@@ -10,7 +10,7 @@ and env = (var * value) list
 let rec eval (env : env) (expr : expr) : value =
   match expr with
   | Variable { name } -> List.assoc name env
-  | Abstraction { param; body } -> VClosure { param; body; env }
+  | Abstraction (param, _t, body) -> VClosure { param; body; env }
   | Application { abstraction; argument } -> eval_app env abstraction argument
   | Integer v -> VInt v
   | Boolean b -> VBool b

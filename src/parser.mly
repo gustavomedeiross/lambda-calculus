@@ -1,5 +1,6 @@
 %{
 open Ast
+open Types
 
 (* f a b c -> (((f a) b) c) *)
 let rec make_application e = function
@@ -17,10 +18,14 @@ let rec make_application e = function
 %token LPARENS
 %token RPARENS
 %token LET
-%token EQUALS
 %token IN
+%token EQUALS
+%token COLON
 %token PLUS
 %token EOF
+(* TODO: Remove *)
+%token TINT
+%token TBOOL
 
 %start <Ast.expr> prog
 
@@ -53,7 +58,20 @@ let let_expr ==
   | LET; name = IDENT; EQUALS; e1 = expr; IN; e2 = expr; { Let (name, e1, e2) }
 
 let abstraction ==
-  | FUN; param = IDENT; ARROW; e = expr; { Abstraction { param = param; body = e } }
+  | FUN; param = IDENT; COLON; t = typ_expr; ARROW; e = expr; { Abstraction (param, t, e) }
+
+let typ_expr :=
+  | typ_terminal
+  | typ_arrow
+  | LPARENS; t = typ_expr; RPARENS; { t }
+
+(* TODO: change it to IDENT with a initial type env *)
+let typ_terminal ==
+  | TINT; { TInt }
+  | TBOOL; { TBool }
+
+let typ_arrow ==
+  | t1 = typ_expr; ARROW; t2 = typ_expr; { TArrow (t1, t2) }
 
 let application :=
   | e = sub_expr; es = sub_expr+; { make_application e es }

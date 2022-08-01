@@ -35,11 +35,14 @@ rule read =
   | "(" { LPARENS }
   | ")" { RPARENS }
   | "let" { LET }
-  | "=" { EQUALS }
   | "in" { IN }
+  | "=" { EQUALS }
+  | ":" { COLON }
   | "->" { ARROW }
   | "fun" { FUN }
-  | id { IDENT (Lexing.lexeme lexbuf) }
+  | "int" { TINT }
+  | "bool" { TBOOL }
   | "+" { PLUS }
+  | id { IDENT (Lexing.lexeme lexbuf) }
   | _ { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf)) }
   | eof { EOF }

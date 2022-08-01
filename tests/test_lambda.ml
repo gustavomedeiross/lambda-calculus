@@ -13,7 +13,7 @@ module EvalTest = struct
       ~expr:"((fun x -> fun y -> x + y) 2) 4"
       ~output:"6";
 
-    test_eval "id func with boolean "
+    test_eval "id func with bool "
       ~expr:"(fun x -> x) true"
       ~output:"true";
 
@@ -64,7 +64,7 @@ module TypecheckTest = struct
   let tests = [
     typechecks_to "integer typechecks"
       ~expr:"1"
-      ~typ:Types.TInteger;
+      ~typ:Types.TInt;
 
     typechecks_to "boolean typechecks"
       ~expr:"true"
@@ -72,15 +72,55 @@ module TypecheckTest = struct
 
     typechecks_to "binop typechecks"
       ~expr:"2 + 2"
-      ~typ:Types.TInteger;
+      ~typ:Types.TInt;
 
     typecheck_fails_with "binop with one wrong type"
       ~expr:"2 + true"
-      ~error:"Expected int, found boolean";
+      ~error:"Expected int, found bool";
 
     typecheck_fails_with "binop with two wrong types"
       ~expr:"false + true"
-      ~error:"Expected int, found boolean";
+      ~error:"Expected int, found bool";
+
+    typechecks_to "basic let expr"
+      ~expr:"let x = 2 in x + 3"
+      ~typ:Types.TInt;
+
+    typecheck_fails_with "invalid binop with let"
+      ~expr:"let x = true in x + 2"
+      ~error:"Expected int, found bool";
+
+    typechecks_to "abstraction with type signature"
+      ~expr:"fun x : int -> x + 2"
+      ~typ:(Types.TArrow (Types.TInt, Types.TInt));
+
+    typechecks_to "abstraction with (bool -> int) signature"
+      ~expr:"fun x : bool -> 2"
+      ~typ:(Types.TArrow (Types.TBool, Types.TInt));
+
+    typechecks_to "nested abstractions"
+      ~expr:"(fun x : int -> (fun y : int -> x + y))"
+      ~typ:(Types.TArrow (Types.TArrow (Types.TInt, Types.TInt), Types.TInt));
+
+    typechecks_to "application with valid type"
+      ~expr:"(fun x : int -> x + 2) 2"
+      ~typ:(TInt);
+
+    typecheck_fails_with "application with invalid parameter"
+      ~expr:"(fun x : int -> x + 2) true"
+      ~error:"Expected int, found bool";
+
+    typechecks_to "returns curried abstraction type"
+      ~expr:"(fun x : int -> (fun y : int -> x + y)) 2"
+      ~typ:(TArrow (TInt, TInt));
+
+    typechecks_to "nested abstractions with let"
+      ~expr:"let f = fun x : int -> (fun y : int -> x + y) in f"
+      ~typ:(Types.TArrow (Types.TArrow (Types.TInt, Types.TInt), Types.TInt));
+
+    typechecks_to "complete application of nested abstractions"
+      ~expr:"let f = fun x : int -> (fun y : int -> x + y) in f 5 10"
+      ~typ:(Types.TInt);
 
     (* typechecks_to "Basic let"
      *   ~expr:"let x : int = 1 in x"
@@ -88,12 +128,12 @@ module TypecheckTest = struct
 
     (* typecheck_fails_with "Invalid let"
      *   ~expr:"let x : int = true in x"
-     *   ~error:"Found boolean, expected int"; *)
+     *   ~error:"Found bool, expected int"; *)
   ]
 end
 
 let () =
   Alcotest.run "Lambda tests" [
-    "Lambda Eval", EvalTest.tests;
+    (* "Lambda Eval", EvalTest.tests; *)
     "Lambda Typechecking", TypecheckTest.tests;
   ]
