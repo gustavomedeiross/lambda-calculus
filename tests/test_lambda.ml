@@ -14,7 +14,7 @@ module EvalTest = struct
       ~output:"6";
 
     test_eval "id func with bool "
-      ~expr:"(fun x : int -> x) true"
+      ~expr:"(fun x : bool -> x) true"
       ~output:"true";
 
     test_eval "let expr"

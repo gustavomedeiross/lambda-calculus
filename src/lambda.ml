@@ -6,5 +6,12 @@ let parse (s : string) : Ast.expr =
   let lexbuf = Lexing.from_string s in
   Parser.prog Lexer.read lexbuf
 
+let typecheck expr =
+  match Typecheck.typecheck [] expr with
+  | Error TypeError e -> failwith e
+  | Ok _ -> expr
+
+let eval expr = Eval.eval [] expr
+
 let interp (s : string) : Eval.value =
-  s |> parse |> Eval.eval []
+  s |> parse |> typecheck |> eval
