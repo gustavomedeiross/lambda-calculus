@@ -11,7 +11,7 @@ let typecheck expr =
   | Error TypeError e -> failwith e
   | Ok _ -> expr
 
-let eval expr = Eval.eval [] expr
+let eval expr = Eval.eval Eval.Env.empty expr
 
 let interp (s : string) : Eval.value =
   s |> parse |> typecheck |> eval

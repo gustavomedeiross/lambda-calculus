@@ -1,15 +1,15 @@
 open Ast
 
+module Env = Map.Make(String)
+
 type value =
-  | VClosure of { param : var; body : expr; env : env  }
+  | VClosure of { param : var; body : expr; env : value Env.t  }
   | VInt of int
   | VBool of bool
 
-and env = (var * value) list
-
-let rec eval (env : env) (expr : expr) : value =
+let rec eval (env : value Env.t) (expr : expr) : value =
   match expr with
-  | Variable { name } -> List.assoc name env
+  | Variable { name } -> Env.find name env
   | Abstraction (param, _t, body) -> VClosure { param; body; env }
   | Application { abstraction; argument } -> eval_app env abstraction argument
   | Integer v -> VInt v
@@ -17,7 +17,7 @@ let rec eval (env : env) (expr : expr) : value =
   | BinOp (bop, e1, e2) -> eval_bop env bop e1 e2
   | Let (name, e1, e2) ->
     let value = eval env e1 in
-    let new_env = (name, value) :: env in
+    let new_env = Env.add name value env in
     eval new_env e2
 
 and eval_app env abstraction argument =
@@ -25,11 +25,11 @@ and eval_app env abstraction argument =
   let abs = eval env abstraction in
   match abs with
   | VClosure { param; body; env } ->
-      let new_env = (param, arg) :: env in
-      eval new_env body
+     let new_env = Env.add param arg env in
+     eval new_env body
   | _ -> failwith "Invalid function application "
 
-and eval_bop (env : env) (bop : binop) (e1 : expr) (e2 : expr) : value =
+and eval_bop (env : value Env.t) (bop : binop) (e1 : expr) (e2 : expr) : value =
   let v1 = get_integer (eval env e1) in
   let v2 = get_integer (eval env e2) in
   match bop with
