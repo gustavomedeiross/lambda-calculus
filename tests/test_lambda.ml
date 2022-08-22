@@ -41,8 +41,7 @@ module TypecheckTest = struct
       let expected = Types.type_to_string typ in
       let actual =
         expr
-        |> Lambda.parse
-        |> Typecheck.typecheck []
+        |> Lambda.typecheck
         |> Result.get_ok
         |> Types.type_to_string
       in
@@ -53,8 +52,7 @@ module TypecheckTest = struct
   let typecheck_fails_with name ~expr ~error =
     let typecheck () =
       expr
-      |> Lambda.parse
-      |> Typecheck.typecheck []
+      |> Lambda.typecheck
       |> Result.get_error
       |> fun (Typecheck.TypeError e) -> e
       |> Alcotest.(check (string) "" error)

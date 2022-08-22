@@ -3,11 +3,13 @@ open Ast
 module Env = Map.Make(String)
 
 type value =
-  | VClosure of { param : var; body : expr; env : value Env.t  }
+  | VClosure of { param : var; body : expr; env : env  }
   | VInt of int
   | VBool of bool
 
-let rec eval (env : value Env.t) (expr : expr) : value =
+and env = value Env.t
+
+let rec eval (env : env) (expr : expr) : value =
   match expr with
   | Variable { name } -> Env.find name env
   | Abstraction (param, _t, body) -> VClosure { param; body; env }
@@ -29,7 +31,7 @@ and eval_app env abstraction argument =
      eval new_env body
   | _ -> failwith "Invalid function application "
 
-and eval_bop (env : value Env.t) (bop : binop) (e1 : expr) (e2 : expr) : value =
+and eval_bop (env : env) (bop : binop) (e1 : expr) (e2 : expr) : value =
   let v1 = get_integer (eval env e1) in
   let v2 = get_integer (eval env e2) in
   match bop with
