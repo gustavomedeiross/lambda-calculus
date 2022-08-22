@@ -28,11 +28,15 @@ let rec make_application e = function
 %token TBOOL
 
 %start <Ast.expr> prog
+%start <Types.typ> typ
 
 %%
 
 let prog :=
   | e = expr; EOF; { e }
+
+let typ :=
+  | t = typ_expr; EOF; { t }
 
 let expr :=
   | sub_expr

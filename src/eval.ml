@@ -4,6 +4,7 @@ module Env = Map.Make(String)
 
 type value =
   | VClosure of { param : var; body : expr; env : env  }
+  | VNative of (value -> value)
   | VInt of int
   | VBool of bool
 
@@ -29,6 +30,7 @@ and eval_app env abstraction argument =
   | VClosure { param; body; env } ->
      let new_env = Env.add param arg env in
      eval new_env body
+  | VNative fn -> fn arg
   | _ -> failwith "Invalid function application "
 
 and eval_bop (env : env) (bop : binop) (e1 : expr) (e2 : expr) : value =
@@ -43,5 +45,6 @@ and get_integer = function
 
 let value_to_string = function
   | VClosure _ -> "VClosure - to_string not implemented"
+  | VNative _ -> "VNative - to_string not implemented"
   | VInt v -> string_of_int v
   | VBool b -> string_of_bool b

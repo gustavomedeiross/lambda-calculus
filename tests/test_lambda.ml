@@ -28,6 +28,10 @@ module EvalTest = struct
     test_eval "let with func"
       ~expr:"let f = fun x : int -> x + 1 in f 10"
       ~output:"11";
+
+    test_eval "native function"
+      ~expr:"plus 2 2"
+      ~output:"4";
   ]
 end
 
@@ -119,6 +123,14 @@ module TypecheckTest = struct
     typechecks_to "complete application of nested abstractions"
       ~expr:"let f = fun x : int -> (fun y : int -> x + y) in f 5 10"
       ~typ:(Types.TInt);
+
+    typechecks_to "native function"
+      ~expr:"plus 1 3"
+      ~typ:(Types.TInt);
+
+    typechecks_to "partial application of native function"
+      ~expr:"plus 1"
+      ~typ:(Types.TArrow (Types.TInt, Types.TInt));
   ]
 end
 

@@ -6,13 +6,30 @@ let parse (s : string) : Ast.expr =
   let lexbuf = Lexing.from_string s in
   Parser.prog Lexer.read lexbuf
 
-let eval expr = Eval.eval Eval.Env.empty expr
+type native =
+  {
+    name : string;
+    typ : Types.typ;
+    fn : (Eval.value -> Eval.value);
+  }
+
+
+let initial_type_env =
+  Typecheck.Env.empty
+  |> Native.add_functions_to_typ_env
+
+let initial_eval_env =
+  Eval.Env.empty
+  |> Native.add_functions_to_eval_env
+
+let eval expr =
+  Eval.eval initial_eval_env expr
 
 let typecheck s =
-  s |> parse |> Typecheck.typecheck Typecheck.Env.empty
+  s |> parse |> Typecheck.typecheck initial_type_env
 
 let interp_typecheck expr =
-  match Typecheck.typecheck Typecheck.Env.empty expr with
+  match Typecheck.typecheck initial_type_env expr with
   | Error TypeError e -> failwith e
   | Ok _ -> expr
 
