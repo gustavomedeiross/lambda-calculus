@@ -21,7 +21,6 @@ let rec make_application e = function
 %token IN
 %token EQUALS
 %token COLON
-%token PLUS
 %token EOF
 (* TODO: Remove *)
 %token TINT
@@ -42,7 +41,6 @@ let expr :=
   | sub_expr
   | abstraction
   | application
-  | binop
   | let_expr
 
 let sub_expr ==
@@ -80,5 +78,3 @@ let typ_arrow ==
 let application :=
   | e = sub_expr; es = sub_expr+; { make_application e es }
 
-let binop ==
-  | e1 = expr; PLUS; e2 = expr; { BinOp (Plus, e1, e2) }

@@ -1,4 +1,3 @@
-open Ast
 open Types
 
 type var = string
@@ -19,7 +18,6 @@ let rec typecheck (env : typeenv) (expr : Ast.expr) : result =
   match expr with
   | Integer _ -> Ok TInt
   | Boolean _ -> Ok TBool
-  | BinOp (op, e1, e2) -> typecheck_binop env op e1 e2
   | Variable { name } -> begin
     match Env.find_opt name env with
     | None -> Result.error (TypeError "Unbound variable")
@@ -42,17 +40,6 @@ let rec typecheck (env : typeenv) (expr : Ast.expr) : result =
        Result.ok return_typ
      else
        Result.error (TypeError ("Expected " ^ (type_to_string param_typ) ^ ", found " ^ (type_to_string arg)))
-and typecheck_binop env op e1 e2 =
-  let* t1 = typecheck env e1 in
-  let* t2 = typecheck env e2 in
-  match op with
-  | Plus -> typecheck_int_binop t1 t2
-
-and typecheck_int_binop t1 t2 =
-  match (t1, t2) with
-  | (TInt, TInt) -> Result.ok TInt
-  | (t, TInt) | (TInt, t) -> binop_error t
-  | (t1, _) -> binop_error t1
 
 and typecheck_let env var e1 e2 =
   let* t1 = typecheck env e1 in
@@ -62,8 +49,4 @@ and typecheck_let env var e1 e2 =
 and get_arrow_types: typ -> (Types.typ * Types.typ, type_err) Result.t = function
   | TArrow (t1, t2) -> Result.ok (t1, t2)
   | typ -> Result.error (TypeError ("Expected abstraction at application, found " ^ type_to_string typ))
-
-and binop_error t =
-  let t = Types.type_to_string t in
-  Result.error (TypeError ("Expected int, found " ^ t))
  

@@ -17,6 +17,7 @@ let white = [' ' '\t']+
 let newline = '\r' | '\n' | "\r\n"
 
 let letter = ['a'-'z' 'A'-'Z']
+(* add support for other symbols *)
 let id = letter+
 
 let digit = ['0'-'9']
@@ -42,7 +43,6 @@ rule read =
   | "fun" { FUN }
   | "int" { TINT }
   | "bool" { TBOOL }
-  | "+" { PLUS }
   | id { IDENT (Lexing.lexeme lexbuf) }
   | _ { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf)) }
   | eof { EOF }

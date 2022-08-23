@@ -9,8 +9,8 @@ module EvalTest = struct
     Alcotest.test_case name `Quick eval
 
   let tests = [
-    test_eval "simple binop"
-      ~expr:"((fun x : int -> fun y : int -> x + y) 2) 4"
+    test_eval "simple native function"
+      ~expr:"((fun x : int -> fun y : int -> plus x y) 2) 4"
       ~output:"6";
 
     test_eval "id func with bool "
@@ -18,15 +18,15 @@ module EvalTest = struct
       ~output:"true";
 
     test_eval "let expr"
-      ~expr:"let x = 2 in x + 5"
+      ~expr:"let x = 2 in plus x 5"
       ~output:"7";
 
     test_eval "let shadows"
-      ~expr:"let x = 1 in let x = x + 2 in x"
+      ~expr:"let x = 1 in let x = plus x 2 in x"
       ~output:"3";
 
     test_eval "let with func"
-      ~expr:"let f = fun x : int -> x + 1 in f 10"
+      ~expr:"let f = fun x : int -> plus x 1 in f 10"
       ~output:"11";
 
     test_eval "native function"
@@ -72,28 +72,28 @@ module TypecheckTest = struct
       ~expr:"true"
       ~typ:Types.TBool;
 
-    typechecks_to "binop typechecks"
-      ~expr:"2 + 2"
-      ~typ:Types.TInt;
+    typechecks_to "native function"
+      ~expr:"plus 1 3"
+      ~typ:(Types.TInt);
 
-    typecheck_fails_with "binop with one wrong type"
-      ~expr:"2 + true"
+    typecheck_fails_with "native with one wrong type"
+      ~expr:"plus 2 true"
       ~error:"Expected int, found bool";
 
-    typecheck_fails_with "binop with two wrong types"
-      ~expr:"false + true"
+    typecheck_fails_with "native with two wrong types"
+      ~expr:"plus false true"
       ~error:"Expected int, found bool";
 
     typechecks_to "basic let expr"
-      ~expr:"let x = 2 in x + 3"
+      ~expr:"let x = 2 in plus x 3"
       ~typ:Types.TInt;
 
-    typecheck_fails_with "invalid binop with let"
-      ~expr:"let x = true in x + 2"
+    typecheck_fails_with "invalid native with let"
+      ~expr:"let x = true in plus x 2"
       ~error:"Expected int, found bool";
 
     typechecks_to "abstraction with type signature"
-      ~expr:"fun x : int -> x + 2"
+      ~expr:"fun x : int -> plus x 2"
       ~typ:(Types.TArrow (Types.TInt, Types.TInt));
 
     typechecks_to "abstraction with (bool -> int) signature"
@@ -101,31 +101,27 @@ module TypecheckTest = struct
       ~typ:(Types.TArrow (Types.TBool, Types.TInt));
 
     typechecks_to "nested abstractions"
-      ~expr:"(fun x : int -> (fun y : int -> x + y))"
+      ~expr:"(fun x : int -> (fun y : int -> plus x y))"
       ~typ:(Types.TArrow (Types.TArrow (Types.TInt, Types.TInt), Types.TInt));
 
     typechecks_to "application with valid type"
-      ~expr:"(fun x : int -> x + 2) 2"
+      ~expr:"(fun x : int -> plus x 2) 2"
       ~typ:(TInt);
 
     typecheck_fails_with "application with invalid parameter"
-      ~expr:"(fun x : int -> x + 2) true"
+      ~expr:"(fun x : int -> plus x 2) true"
       ~error:"Expected int, found bool";
 
     typechecks_to "returns curried abstraction type"
-      ~expr:"(fun x : int -> (fun y : int -> x + y)) 2"
+      ~expr:"(fun x : int -> (fun y : int -> plus x y)) 2"
       ~typ:(TArrow (TInt, TInt));
 
     typechecks_to "nested abstractions with let"
-      ~expr:"let f = fun x : int -> (fun y : int -> x + y) in f"
+      ~expr:"let f = fun x : int -> (fun y : int -> plus x y) in f"
       ~typ:(Types.TArrow (Types.TArrow (Types.TInt, Types.TInt), Types.TInt));
 
     typechecks_to "complete application of nested abstractions"
-      ~expr:"let f = fun x : int -> (fun y : int -> x + y) in f 5 10"
-      ~typ:(Types.TInt);
-
-    typechecks_to "native function"
-      ~expr:"plus 1 3"
+      ~expr:"let f = fun x : int -> (fun y : int -> plus x y) in f 5 10"
       ~typ:(Types.TInt);
 
     typechecks_to "partial application of native function"
