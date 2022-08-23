@@ -4,7 +4,7 @@ type var = string
 
 module Env = Map.Make(String)
 
-type typeenv = Types.typ Env.t
+type env = Types.typ Env.t
 
 type type_err = TypeError of string
 
@@ -13,7 +13,7 @@ type result = (Types.typ, type_err) Result.t
 
 let (let*) x f = Result.bind x f
 
-let rec typecheck (env : typeenv) (expr : Ast.expr) : result =
+let rec typecheck (env : env) (expr : Ast.expr) : result =
   let open Ast in
   match expr with
   | Integer _ -> Ok TInt
@@ -25,7 +25,7 @@ let rec typecheck (env : typeenv) (expr : Ast.expr) : result =
   end
   | Let (var, e1, e2) -> typecheck_let env var e1 e2
   (* TODO: do we need any sort of "closure" here? *)
-  (* like TArrow(typ * typ * typeenv) *)
+  (* like TArrow(typ * typ * env) *)
   | Abstraction (param, typ, body) ->
      let new_env = Env.add param typ env in
      let* body_typ = typecheck new_env body in

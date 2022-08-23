@@ -24,7 +24,7 @@ let initial_env =
   ]
 
 
-let add_functions_to_typ_env (env : Typecheck.typeenv) : Typecheck.typeenv =
+let add_functions_to_typ_env (env : Typecheck.env) : Typecheck.env =
   let f env' native =
     let typ = type_from_string native.typ in
     Typecheck.Env.add native.name typ env'
