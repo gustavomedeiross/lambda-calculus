@@ -27,7 +27,7 @@ let rec make_application e = function
 %token TBOOL
 
 %start <Ast.expr> prog
-%start <Types.typ> typ
+%start <Types.t> typ
 
 %%
 
@@ -60,7 +60,8 @@ let let_expr ==
   | LET; name = IDENT; EQUALS; e1 = expr; IN; e2 = expr; { Let (name, e1, e2) }
 
 let abstraction ==
-  | FUN; param = IDENT; COLON; t = typ_expr; ARROW; e = expr; { Abstraction (param, t, e) }
+  | FUN; param = IDENT; COLON; t = typ_expr; ARROW; e = expr; { Abstraction (param, Some t, e) }
+  | FUN; param = IDENT; ARROW; e = expr; { Abstraction (param, None, e) }
 
 let typ_expr :=
   | typ_terminal

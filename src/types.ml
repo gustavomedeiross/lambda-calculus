@@ -1,11 +1,14 @@
-type typ =
+type var = string
+type t =
   | TInt
   | TBool
-  | TArrow of typ * typ
+  | TArrow of t * t
+  | TVar of var
 
 let rec type_to_string = function
   | TInt -> "int"
   | TBool -> "bool"
+  | TVar var -> var
   | TArrow (t1, t2) ->
     let t1 = type_to_string t1 in
     let t2 = type_to_string t2 in
