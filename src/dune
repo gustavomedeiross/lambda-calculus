@@ -1,5 +1,6 @@
 (library
- (name lambda))
+ (name lambda)
+ (libraries str))
 
 (ocamllex lexer)
 

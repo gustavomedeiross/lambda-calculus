@@ -13,7 +13,6 @@ type native =
     fn : (Eval.value -> Eval.value);
   }
 
-
 let initial_type_env =
   Typecheck.Env.empty
   |> Native.add_functions_to_typ_env

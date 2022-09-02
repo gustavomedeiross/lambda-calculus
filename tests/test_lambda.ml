@@ -53,6 +53,19 @@ module TypecheckTest = struct
     in
     Alcotest.test_case name `Quick typecheck
 
+  let typechecks name ~expr ~typ =
+    let typecheck () =
+      let expected = typ in
+      let actual =
+        expr
+        |> Lambda.typecheck
+        |> Result.get_ok
+        |> Types.type_to_string
+      in
+      Alcotest.(check (string) "" expected) actual
+    in
+    Alcotest.test_case name `Quick typecheck
+
   (* TODO wrong implementation for now, just for the tests to pass *)
   let typecheck_fails_with name ~expr ~error =
     (ignore error);
@@ -103,9 +116,9 @@ module TypecheckTest = struct
       ~expr:"fun x : bool -> 2"
       ~typ:(Types.TArrow (Types.TBool, Types.TInt));
 
-    typechecks_to "nested abstractions"
+    typechecks "nested abstractions"
       ~expr:"(fun x : int -> (fun y : int -> plus x y))"
-      ~typ:(Types.TArrow (Types.TArrow (Types.TInt, Types.TInt), Types.TInt));
+      ~typ:"int -> int -> int";
 
     typechecks_to "application with valid type"
       ~expr:"(fun x : int -> plus x 2) 2"
@@ -119,9 +132,9 @@ module TypecheckTest = struct
       ~expr:"(fun x : int -> (fun y : int -> plus x y)) 2"
       ~typ:(TArrow (TInt, TInt));
 
-    typechecks_to "nested abstractions with let"
+    typechecks "nested abstractions with let"
       ~expr:"let f = fun x : int -> (fun y : int -> plus x y) in f"
-      ~typ:(Types.TArrow (Types.TArrow (Types.TInt, Types.TInt), Types.TInt));
+      ~typ:"int -> int -> int";
 
     typechecks_to "complete application of nested abstractions"
       ~expr:"let f = fun x : int -> (fun y : int -> plus x y) in f 5 10"
@@ -139,6 +152,51 @@ module TypecheckTest = struct
     typechecks_to "function with generic param"
       ~expr:"fun x -> 2"
       ~typ:(Types.TArrow (Types.TVar "?X1", Types.TInt));
+
+    typechecks_to "id function is polymorphic"
+      ~expr:"let id = fun x -> x in id"
+      ~typ:(Types.TArrow (Types.TVar "?X1", Types.TVar "?X1"));
+
+    (* TODO: refactor these tests - remove duplication using a tuple or something like that *)
+    (* example: (id, i, b) => ('a -> 'a, int, bool) *)
+    typechecks "polymorphic function remains polymorphic after instantiation"
+      ~expr:{|
+                let id = fun x -> x in
+                let i = id 2 in
+                let b = id true in
+                id
+             |}
+      ~typ:"?X1 -> ?X1";
+
+    typechecks_to "returned types of polymorphic instantiation are monomorphic"
+      ~expr:{|
+                let id = fun x -> x in
+                let i = id 2 in
+                let b = id true in
+                i
+             |}
+      ~typ:(Types.TInt);
+
+    typechecks_to "returned types of polymorphic instantiation are monomorphic"
+      ~expr:{|
+                let id = fun x -> x in
+                let i = id 2 in
+                let b = id true in
+                b
+             |}
+      ~typ:(Types.TBool);
+
+    typechecks "reconstructs type #1"
+      ~expr:"fun z -> fun y -> z (y true)"
+      ~typ:"(?X1 -> ?X2) -> (bool -> ?X1) -> ?X2";
+
+    typecheck_fails_with "function type annotation with conflicting body"
+      ~expr:"fun x : bool -> plus x 1"
+      ~error:"Expected int, found bool";
+
+    typecheck_fails_with "function type annotation with conflicting application"
+      ~expr:"(fun x : int -> plus x 1) true"
+      ~error:"Expected int, found bool";
   ]
 end
 
