@@ -39,20 +39,6 @@ module TypecheckTest = struct
   module Types = Lambda.Types
   module Typecheck = Lambda.Typecheck
 
-  (* TODO: implement testable inteface for Types *)
-  let typechecks_to name ~expr ~typ =
-    let typecheck () =
-      let expected = Types.type_to_string typ in
-      let actual =
-        expr
-        |> Lambda.typecheck
-        |> Result.get_ok
-        |> Types.type_to_string
-      in
-      Alcotest.(check (string) "" expected) actual
-    in
-    Alcotest.test_case name `Quick typecheck
-
   let typechecks name ~expr ~typ =
     let typecheck () =
       let expected = typ in
@@ -67,7 +53,7 @@ module TypecheckTest = struct
     Alcotest.test_case name `Quick typecheck
 
   (* TODO wrong implementation for now, just for the tests to pass *)
-  let typecheck_fails_with name ~expr ~error =
+  let typecheck_fails name ~expr ~error =
     (ignore error);
     let error = "Unification error" in
     let typecheck () =
@@ -80,82 +66,85 @@ module TypecheckTest = struct
     Alcotest.test_case name `Quick typecheck
 
   let tests = [
-    typechecks_to "integer typechecks"
+    typechecks "integer typechecks"
       ~expr:"1"
-      ~typ:Types.TInt;
+      ~typ:"int";
 
-    typechecks_to "boolean typechecks"
+    typechecks "boolean typechecks"
       ~expr:"true"
-      ~typ:Types.TBool;
+      ~typ:"bool";
 
-    typechecks_to "native function"
+    typechecks "function application"
       ~expr:"plus 1 3"
-      ~typ:(Types.TInt);
+      ~typ:"int";
 
-    typecheck_fails_with "native with one wrong type"
+    typecheck_fails "application with one wrong argument"
       ~expr:"plus 2 true"
       ~error:"Expected int, found bool";
 
-    typecheck_fails_with "native with two wrong types"
+    typecheck_fails "application with two wrong arguments"
       ~expr:"plus false true"
       ~error:"Expected int, found bool";
 
-    typechecks_to "basic let expr"
-      ~expr:"let x = 2 in plus x 3"
-      ~typ:Types.TInt;
+    typechecks "basic let expr"
+      ~expr:"let x = 2 in x"
+      ~typ:"int";
 
-    typecheck_fails_with "invalid native with let"
+    typechecks "basic let expr with application"
+      ~expr:"let x = 2 in plus x 3"
+      ~typ:"int";
+
+    typecheck_fails "invalid application with let"
       ~expr:"let x = true in plus x 2"
       ~error:"Expected int, found bool";
 
-    typechecks_to "abstraction with type signature"
+    typechecks "abstraction with type signature"
       ~expr:"fun x : int -> plus x 2"
-      ~typ:(Types.TArrow (Types.TInt, Types.TInt));
+      ~typ:"int -> int";
 
-    typechecks_to "abstraction with (bool -> int) signature"
+    typechecks "abstraction with (bool -> int) signature"
       ~expr:"fun x : bool -> 2"
-      ~typ:(Types.TArrow (Types.TBool, Types.TInt));
+      ~typ:"bool -> int";
 
     typechecks "nested abstractions"
       ~expr:"(fun x : int -> (fun y : int -> plus x y))"
       ~typ:"int -> int -> int";
 
-    typechecks_to "application with valid type"
+    typechecks "application with valid type"
       ~expr:"(fun x : int -> plus x 2) 2"
-      ~typ:(TInt);
+      ~typ:"int";
 
-    typecheck_fails_with "application with invalid parameter"
+    typecheck_fails "application with invalid parameter"
       ~expr:"(fun x : int -> plus x 2) true"
       ~error:"Expected int, found bool";
 
-    typechecks_to "returns curried abstraction type"
+    typechecks "returns curried abstraction type"
       ~expr:"(fun x : int -> (fun y : int -> plus x y)) 2"
-      ~typ:(TArrow (TInt, TInt));
+      ~typ:"int -> int";
 
     typechecks "nested abstractions with let"
       ~expr:"let f = fun x : int -> (fun y : int -> plus x y) in f"
       ~typ:"int -> int -> int";
 
-    typechecks_to "complete application of nested abstractions"
+    typechecks "complete application of nested abstractions"
       ~expr:"let f = fun x : int -> (fun y : int -> plus x y) in f 5 10"
-      ~typ:(Types.TInt);
+      ~typ:"int";
 
-    typechecks_to "partial application of native function"
+    typechecks "partial application of native function"
       ~expr:"plus 1"
-      ~typ:(Types.TArrow (Types.TInt, Types.TInt));
+      ~typ:"int -> int";
 
-    (* (\* TODO: improve test DSLs, these names don't make sense *\) *)
-    typechecks_to "infers type of function"
+    typechecks "infers type of function"
       ~expr:"fun x -> plus x x"
-      ~typ:(Types.TArrow (Types.TInt, Types.TInt));
+      ~typ:"int -> int";
 
-    typechecks_to "function with generic param"
+    typechecks "function with generic param"
       ~expr:"fun x -> 2"
-      ~typ:(Types.TArrow (Types.TVar "?X1", Types.TInt));
+      ~typ:"?X1 -> int";
 
-    typechecks_to "id function is polymorphic"
+    typechecks "id function is polymorphic"
       ~expr:"let id = fun x -> x in id"
-      ~typ:(Types.TArrow (Types.TVar "?X1", Types.TVar "?X1"));
+      ~typ:"?X1 -> ?X1";
 
     (* TODO: refactor these tests - remove duplication using a tuple or something like that *)
     (* example: (id, i, b) => ('a -> 'a, int, bool) *)
@@ -168,35 +157,35 @@ module TypecheckTest = struct
              |}
       ~typ:"?X1 -> ?X1";
 
-    typechecks_to "returned types of polymorphic instantiation are monomorphic"
+    typechecks "returned types of polymorphic instantiation are monomorphic"
       ~expr:{|
                 let id = fun x -> x in
                 let i = id 2 in
                 let b = id true in
                 i
              |}
-      ~typ:(Types.TInt);
+      ~typ:"int";
 
-    typechecks_to "returned types of polymorphic instantiation are monomorphic"
+    typechecks "returned types of polymorphic instantiation are monomorphic"
       ~expr:{|
                 let id = fun x -> x in
                 let i = id 2 in
                 let b = id true in
                 b
              |}
-      ~typ:(Types.TBool);
+      ~typ:"bool";
 
-    typechecks "reconstructs type #1"
-      ~expr:"fun z -> fun y -> z (y true)"
-      ~typ:"(?X1 -> ?X2) -> (bool -> ?X1) -> ?X2";
-
-    typecheck_fails_with "function type annotation with conflicting body"
+    typecheck_fails "function type annotation with conflicting body"
       ~expr:"fun x : bool -> plus x 1"
       ~error:"Expected int, found bool";
 
-    typecheck_fails_with "function type annotation with conflicting application"
+    typecheck_fails "function type annotation with conflicting application"
       ~expr:"(fun x : int -> plus x 1) true"
       ~error:"Expected int, found bool";
+
+    typechecks "reconstructs type of high-order functions"
+      ~expr:"fun x -> fun y -> x (y true)"
+      ~typ:"(?X1 -> ?X2) -> (bool -> ?X1) -> ?X2";
   ]
 end
 
