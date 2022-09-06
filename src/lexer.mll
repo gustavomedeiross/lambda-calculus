@@ -16,9 +16,7 @@
 let white = [' ' '\t']+
 let newline = '\r' | '\n' | "\r\n"
 
-let letter = ['a'-'z' 'A'-'Z']
-(* add support for other symbols *)
-let id = letter+
+let id = ['a'-'z' 'A'-'Z' '_']+
 
 let digit = ['0'-'9']
 let frac = '.' digit*

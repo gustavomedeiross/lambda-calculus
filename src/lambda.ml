@@ -9,7 +9,7 @@ let parse (s : string) : Ast.expr =
 type native =
   {
     name : string;
-    typ : Types.t;
+    typ : Types.typ;
     fn : (Eval.value -> Eval.value);
   }
 

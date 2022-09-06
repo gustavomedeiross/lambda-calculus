@@ -12,7 +12,11 @@ type native =
 
 let get_int = function
   | Eval.VInt v -> v
-  | _ -> failwith "Expected integer at binary operation"
+  | v -> failwith ("Expected integer, found " ^ Eval.value_to_string v)
+
+let get_bool = function
+  | Eval.VBool v -> v
+  | v -> failwith ("Expected bool, found " ^ Eval.value_to_string v)
 
 let initial_env =
   [
@@ -20,9 +24,13 @@ let initial_env =
         name = "plus";
         typ = "int -> int -> int";
         fn = fun x -> VNative (fun y -> VInt (get_int x + get_int y))
-    }
+    };
+    {
+        name = "is_true";
+        typ = "bool -> bool";
+        fn = fun x -> VBool (get_bool x)
+    };
   ]
-
 
 let add_functions_to_typ_env (env : Typecheck.env) : Typecheck.env =
   let f env' native =

@@ -1,17 +1,59 @@
-type var = string
-type t =
+module TyVar : sig
+  type t
+
+  type state
+
+  val gen_fresh : state -> (t * state)
+
+  val initial_state : unit -> state
+
+  val equal : t -> t -> bool
+
+  val compare : t -> t -> int
+
+  val to_string : t -> string
+end
+=
+struct
+  type t = string
+
+  type state = VarState of int
+
+  let of_int v = "?X" ^ string_of_int v
+
+  let from_int v = 
+    v
+    |> Str.global_replace (Str.regexp "?X") ""
+    |> int_of_string
+
+  let initial_state () = VarState 0
+
+  let gen_fresh (VarState s) =
+    let fresh = s + 1 in
+    (of_int fresh, VarState fresh)
+
+  let compare x y =
+    Int.compare (from_int x) (from_int y)
+
+  let equal = String.equal
+
+  let to_string s = s
+end
+
+type var = TyVar.t
+type typ =
   | TInt
   | TBool
-  | TArrow of t * t
+  | TArrow of typ * typ
   | TVar of var
 
 (* forall 'a 'b . 'a -> 'b *)
-type scheme = Scheme of (var list * t)
+type scheme = Scheme of (var list * typ)
 
 let rec type_to_string = function
   | TInt -> "int"
   | TBool -> "bool"
-  | TVar var -> var
+  | TVar var -> TyVar.to_string var
   | TArrow (TArrow _ as t1, t2) ->
     let t1 = "(" ^ type_to_string t1 ^ ")" in
     let t2 = type_to_string t2 in
@@ -21,9 +63,9 @@ let rec type_to_string = function
     let t2 = type_to_string t2 in
     t1 ^ " -> " ^ t2
 
-let rec equals t1 t2 =
+let rec equal t1 t2 =
   match (t1, t2) with
   | (t1, t2) when t1 == t2 -> true
   | (TArrow (p1, r1), TArrow (p2, r2)) ->
-    equals p1 p2 && equals r1 r2
+    equal p1 p2 && equal r1 r2
   | _ -> false

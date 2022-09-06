@@ -186,6 +186,14 @@ module TypecheckTest = struct
     typechecks "reconstructs type of high-order functions"
       ~expr:"fun x -> fun y -> x (y true)"
       ~typ:"(?X1 -> ?X2) -> (bool -> ?X1) -> ?X2";
+
+    typecheck_fails "does not generalize types of outer contexts (TAPL test)"
+      ~expr:{|
+             (fun f -> fun x -> let g = f in g 0)
+               (fun x -> is_true x)
+               true
+             |}
+      ~error:"Expected int, found bool";
   ]
 end
 

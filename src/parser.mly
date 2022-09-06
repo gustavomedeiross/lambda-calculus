@@ -22,12 +22,11 @@ let rec make_application e = function
 %token EQUALS
 %token COLON
 %token EOF
-(* TODO: Remove *)
 %token TINT
 %token TBOOL
 
 %start <Ast.expr> prog
-%start <Types.t> typ
+%start <Types.typ> typ
 
 %%
 
