@@ -1,5 +1,5 @@
 module TyVar : sig
-  type t
+  type t [@@deriving show]
 
   type state
 
@@ -15,7 +15,7 @@ module TyVar : sig
 end
 =
 struct
-  type t = string
+  type t = string [@@deriving show]
 
   type state = VarState of int
 
@@ -41,14 +41,18 @@ struct
 end
 
 type var = TyVar.t
+[@@deriving show]
+
 type typ =
   | TInt
   | TBool
   | TArrow of typ * typ
   | TVar of var
+[@@deriving show]
 
 (* forall 'a 'b . 'a -> 'b *)
 type scheme = Scheme of (var list * typ)
+[@@deriving show]
 
 let rec type_to_string = function
   | TInt -> "int"

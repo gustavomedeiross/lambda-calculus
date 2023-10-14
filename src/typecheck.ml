@@ -11,10 +11,13 @@ type result = (typ, type_err) Result.t
 let (let*) x f = Result.bind x f
 
 type constr = (typ * typ)
+[@@deriving show]
 
 type substitution = (var * typ)
+[@@deriving show]
 
 type ftv = var list
+[@@deriving show]
 
 let diff l1 l2 = List.filter (fun x -> not (List.mem x l2)) l1
 
